@@ -36,7 +36,7 @@ spec:
         image: rogeroriol/event-service:latest
         env:
           - name: MONGO_URL
-            value: mongodb://eventservice-mongo:27017/events
+            value: eventservice-mongo:27017
           - name: MONGO_USER
             valueFrom:
               secretKeyRef:
@@ -51,5 +51,15 @@ spec:
             value: "8"
           - name: SQS_URL
             value: https://sqs.eu-west-1.amazonaws.com/725226204633/tfg-queue
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: aws-credentials
+                key: access_key_id
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: aws-credentials
+                key: secret_access_key
         ports:
         - containerPort: 8080

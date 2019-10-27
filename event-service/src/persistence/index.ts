@@ -15,13 +15,9 @@ class MongoConnectionError extends Error {
 export default class Persistence {
   public static connect(): Promise<void> {
     return new Promise((resolve, reject) => {
-      console.log(`Connecting to MongoDB at URL ${MONGO_URL} using credentials ${MONGO_USER}:${MONGO_PWD}`);
-      mongoose.connect(MONGO_URL, {
+      console.log(`Connecting to MongoDB at URL ${MONGO_URL}`);
+      mongoose.connect(`mongodb://${MONGO_USER}:${MONGO_PWD}@${MONGO_URL}/${MONGO_USER}`, {
         useNewUrlParser: true,
-        auth: {
-          user: MONGO_USER,
-          password: MONGO_PWD
-        },
         reconnectTries: MONGO_RETRIES
       });
       const db = mongoose.connection;

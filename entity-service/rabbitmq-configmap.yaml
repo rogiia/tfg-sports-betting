@@ -1,7 +1,0 @@
-# Define 'Configmap' to store non-sensitive database configuration 
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: tfg-queue-conf  # name of ConfigMap, referenced in other files
-data:
-  name: "event-queue" 
