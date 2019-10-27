@@ -1,0 +1,2 @@
+CREATE TABLE sport;
+CREATE TABLE team;

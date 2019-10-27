@@ -1,0 +1,97 @@
+# Define a 'Service' To Expose mysql to Other Services
+apiVersion: v1
+kind: Service
+metadata:
+  name: entityservice-mysql  # DNS name 
+  labels:
+    app: entityservice-mysql
+    tier: database
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:       # mysql Pod Should contain same labels
+    app: entityservice-mysql
+    tier: database
+  clusterIP: None  # We Use DNS, Thus ClusterIP is not relevant
+---
+# Define a 'Persistent Voulume Claim'(PVC) for Mysql Storage, dynamically provisioned by cluster
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: entityservice-mysql-pv-claim # name of PVC essential for identifying the storage data 
+  labels:
+    app: entityservice-mysql
+    tier: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Configure 'Deployment' of mysql server
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: entityservice-mysql
+  labels:
+    app: entityservice-mysql
+    tier: database
+spec:
+  selector: # mysql Pod Should contain same labels 
+    matchLabels:
+      app: entityservice-mysql
+      tier: database
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels: # Must match 'Service' and 'Deployment' selectors
+        app: entityservice-mysql
+        tier: database
+    spec:
+      containers:
+      - image: mysql:5.7
+        name: entityservice-mysql 
+        env:
+        - name: MYSQL_ROOT_PASSWORD # Setting Root Password of mysql From a 'Secret'
+          valueFrom:
+            secretKeyRef:
+              name: entityservice-db-root-credentials # Name of the 'Secret'
+              key: password   # 'key' inside the Secret which contains required 'value'
+        - name: MYSQL_USER # Setting USER username on mysql From a 'Secret'
+          valueFrom:
+            secretKeyRef:
+              name: entityservice-db-credentials
+              key: username
+        - name: MYSQL_PASSWORD # Setting USER Password on mysql From a 'Secret'
+          valueFrom:
+            secretKeyRef:
+              name: entityservice-db-credentials
+              key: password
+        - name: MYSQL_DATABASE # Setting Database Name from a 'ConfigMap'
+          valueFrom:
+            configMapKeyRef:
+              name: entityservice-db-conf
+              key: name
+        - name: MYSQL_INITDB_SKIP_TZINFO
+          valueFrom:
+            configMapKeyRef:
+              name: entityservice-db-conf
+              key: skipTZInfo
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:        # Mounting voulume obtained from Persistent Volume Claim
+        - name: entityservice-init-db
+          mountPath: /docker-entrypoint-initdb.d
+        - name: entityservice-mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: entityservice-init-db
+        configMap:
+          name: entityservice-init-db
+      - name: entityservice-mysql-persistent-storage # Obtaining 'volume' from PVC
+        persistentVolumeClaim:
+          claimName: entityservice-mysql-pv-claim

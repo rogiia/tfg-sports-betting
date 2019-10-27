@@ -1,0 +1,21 @@
+# Define 'Configmap' to store non-sensitive database configuration 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: entityservice-db-conf  # name of ConfigMap, referenced in other files
+data:
+  host: entityservice-mysql   # host address of mysql server, we are using DNS of Service
+  name: entityservice-db # name of the database for application
+  skipTZInfo: "true"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: entityservice-init-db
+data:
+  initdb.sql: |
+      CREATE TABLE IF NOT EXISTS `entityservice-db`.`sport` (id INT, name VARCHAR(256), PRIMARY KEY (id));
+      CREATE TABLE IF NOT EXISTS `entityservice-db`.`team` (id INT, name VARCHAR(256), sport INT, PRIMARY KEY (id), FOREIGN KEY (sport) REFERENCES sport(id) ON DELETE CASCADE);
+      INSERT INTO sport VALUES (1, 'Futbol');
+      INSERT INTO sport VALUES (2, 'Basquetbol');
+      INSERT INTO sport VALUES (3, 'Hoquei');

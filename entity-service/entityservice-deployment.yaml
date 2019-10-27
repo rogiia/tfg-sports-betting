@@ -1,0 +1,66 @@
+# Define 'Service' to expose backend application deployment
+apiVersion: v1
+kind: Service
+metadata:
+  name: entity-service  
+spec:
+  selector:  # backend application pod lables should match these
+    app: entity-service
+    tier: backend
+  ports:
+  - protocol: "TCP"
+    port: 8080
+    targetPort: 8080
+  type: NodePort   # use NodePort, if you are not running Kubernetes on cloud
+---
+# Configure 'Deployment' of backend application
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: entity-service
+  labels: 
+    app: entity-service
+    tier: backend
+spec:
+  replicas: 1    # Number of replicas of back-end application to be deployed
+  selector:
+    matchLabels: # backend application pod labels should match these
+      app: entity-service
+      tier: backend
+  template:
+    metadata:
+      labels: # Must macth 'Service' and 'Deployment' labels
+        app: entity-service
+        tier: backend  
+    spec:                 
+      containers: 
+      - name: entity-service 
+        image: rogeroriol/entity-service:latest # docker image of backend application
+        env:   # Setting Enviornmental Variables
+          - name: DB_HOST   # Setting Database host address from configMap
+            valueFrom: 
+              configMapKeyRef:
+                name: entityservice-db-conf  # name of configMap
+                key: host
+          - name: DB_NAME  # Setting Database name from configMap
+            valueFrom:
+              configMapKeyRef:
+                name: entityservice-db-conf 
+                key: name
+          - name: DB_USERNAME  # Setting Database username from Secret
+            valueFrom:
+              secretKeyRef:
+                name: entityservice-db-credentials # Secret Name
+                key: username
+          - name: DB_PASSWORD # Setting Database password from Secret
+            valueFrom:
+              secretKeyRef:
+                name: entityservice-db-credentials
+                key: password
+          - name: RABBITMQ_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: tfg-queue-conf
+                key: name
+        ports:
+        - containerPort: 8080

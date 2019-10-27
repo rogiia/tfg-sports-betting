@@ -1,0 +1,2 @@
+DROP TABLE sport;
+DROP TABLE team;
