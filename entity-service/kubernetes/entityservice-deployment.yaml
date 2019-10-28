@@ -11,6 +11,7 @@ spec:
   - protocol: "TCP"
     port: 8080
     targetPort: 8080
+    name: http
   type: NodePort   # use NodePort, if you are not running Kubernetes on cloud
 ---
 # Configure 'Deployment' of backend application

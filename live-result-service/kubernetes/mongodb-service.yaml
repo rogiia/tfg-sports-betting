@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: liveresult-mongo
+    tier: database
+  name: liveresult-mongo
+spec:
+  ports:
+    - port: 27017
+      targetPort: 27017
+  selector:
+    app: liveresult-mongo
+    tier: database
+  clusterIP: None
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: liveresult-mongo-pv-claim
+  labels:
+    app: liveresult-mongo
+    tier: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: liveresult-mongo
+  labels:
+    app: liveresult-mongo
+    tier: database
+spec:
+  selector:
+    matchLabels:
+      app: liveresult-mongo
+      tier: database
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: liveresult-mongo
+        tier: database
+    spec:
+      containers:
+      - image: mongo:4.2.1
+        name: liveresult-mongo
+        env:
+          - name: MONGO_INITDB_ROOT_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: liveresult-mongo-root-credentials
+                key: username
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: liveresult-mongo-root-credentials
+                key: password
+        ports:
+        - name: mongo
+          containerPort: 27017
+          hostPort: 27017
+        volumeMounts:
+            - name: liveresult-mongo-persistent-storage
+              mountPath: /data/db
+      volumes:
+      - name: liveresult-mongo-persistent-storage
+        persistentVolumeClaim:
+          claimName: liveresult-mongo-pv-claim
