@@ -40,6 +40,24 @@ export default class Persistence {
     });
   }
 
+  public static findCurrentEventByTeams(localTeamName: string, visitorTeamName: string): Promise<(mongoose.Document & IEvent)[]> {
+    return new Promise((resolve, reject) => {
+      if (!mongoose.connection) {
+        reject(new MongoConnectionError());
+      }
+      EventModel.find({
+        localTeamName,
+        visitorTeamName,
+        ended: false
+      }, (err, res: (mongoose.Document & IEvent)[]) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(res);
+      });
+    });
+  }
+
   public static findEventById(id: string): Promise<IEvent | null> {
     return new Promise((resolve, reject) => {
       if (!mongoose.connection) {
@@ -54,11 +72,25 @@ export default class Persistence {
     });
   }
 
-  public static async create(event: IEvent): Promise<IEvent> {
+  public static async create(event: IEvent): Promise<mongoose.Document & IEvent> {
     if (!mongoose.connection) {
       throw new MongoConnectionError();
     }
     return await EventModel.create(event);
+  }
+
+  public static async updateEventById(id: string, event: IEvent): Promise<IEvent | null> {
+    return new Promise((resolve, reject) => {
+      if (!mongoose.connection) {
+        throw new MongoConnectionError();
+      }
+      EventModel.findByIdAndUpdate(id, event, {}, (err, res: IEvent | null) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(res);
+      });
+    });
   }
 
   public static disconnect(): Promise<void> {

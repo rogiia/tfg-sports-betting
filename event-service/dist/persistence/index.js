@@ -38,6 +38,23 @@ class Persistence {
             });
         });
     }
+    static findCurrentEventByTeams(localTeamName, visitorTeamName) {
+        return new Promise((resolve, reject) => {
+            if (!mongoose.connection) {
+                reject(new MongoConnectionError());
+            }
+            event_model_1.default.find({
+                localTeamName,
+                visitorTeamName,
+                ended: false
+            }, (err, res) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(res);
+            });
+        });
+    }
     static findEventById(id) {
         return new Promise((resolve, reject) => {
             if (!mongoose.connection) {
@@ -57,6 +74,21 @@ class Persistence {
                 throw new MongoConnectionError();
             }
             return yield event_model_1.default.create(event);
+        });
+    }
+    static updateEventById(id, event) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                if (!mongoose.connection) {
+                    throw new MongoConnectionError();
+                }
+                event_model_1.default.findByIdAndUpdate(id, event, {}, (err, res) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve(res);
+                });
+            });
         });
     }
     static disconnect() {

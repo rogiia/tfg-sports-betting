@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const express = require("express");
 const http_status_codes_1 = require("http-status-codes");
-const persistence_1 = require("../persistence");
+const event_watcher_1 = require("../persistence/event-watcher");
 const router = express.Router();
 router.post('/', (req, res) => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -13,15 +13,8 @@ router.post('/', (req, res) => tslib_1.__awaiter(void 0, void 0, void 0, functio
             localTeamResult: parseInt(localTeamResult),
             visitorTeamResult: parseInt(visitorTeamResult)
         };
-        const existingEvent = yield persistence_1.default.findEventByEventId(eventId);
-        let result;
-        if (existingEvent) {
-            result = persistence_1.default.update(event);
-        }
-        else {
-            result = persistence_1.default.create(event);
-        }
-        res.status(http_status_codes_1.OK).json(result);
+        event_watcher_1.default.emit(event);
+        res.status(http_status_codes_1.OK).json({ message: `Event ${eventId} published correctly` });
     }
     catch (err) {
         console.error(err);
