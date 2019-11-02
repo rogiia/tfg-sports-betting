@@ -1,5 +1,7 @@
-import GetEventResultController from './get-event-result';
+import GetUserBetsController from './get-user-bets';
+import PlaceBetController from './place-bet';
 
 export {
-  GetEventResultController
+  GetUserBetsController,
+  PlaceBetController
 };

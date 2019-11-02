@@ -4,8 +4,10 @@ import * as compression from 'compression';
 import * as morgan from 'morgan';
 
 import {
-  GetEventResultController
+  GetUserBetsController,
+  PlaceBetController
 } from './controllers';
+import Persistence from './persistence';
 
 export default class Server {
   private static instance: Server | null = null;
@@ -24,12 +26,20 @@ export default class Server {
   }
 
   public async start(port: number = 3000): Promise<void> {
+    try {
+      Persistence.connect();
+      console.log('Successfully connected to MongoDB');
+    } catch (err) {
+      throw err;
+    }
     this.app.use(helmet());
     this.app.use(compression());
     this.app.use(morgan('combined'));
-    this.app.use('/event', GetEventResultController);
+    this.app.use('/bet', GetUserBetsController);
+    this.app.use('/bet', PlaceBetController);
     const listener = this.app.listen(port, () => console.log(`Server listening on port ${port}`));
     listener.on('close', () => {
+      Persistence.disconnect();
       console.log('Closing server...');
     });
     listener.on('error', (err: Error) => {

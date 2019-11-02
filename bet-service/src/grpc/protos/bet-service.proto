@@ -1,0 +1,13 @@
+service BetService {
+  rpc SettleBet (SettleBetRequest) returns (SettleBetResponse);
+}
+
+message SettleBetRequest {
+  string betId = 1;
+  string result = 2;
+}
+
+message SettleBetResponse {
+  bool OK = 1;
+  bool winner = 2;
+}

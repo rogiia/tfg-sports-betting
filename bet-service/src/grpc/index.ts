@@ -1,12 +1,13 @@
 import {
   Server,
-  ServerCredentials
+  ServerCredentials,
+  credentials
 } from 'grpc';
 
-import EventResultImplementation from './implementation/event-result-service';
+import EventResultImplementation from './implementation/bet-service';
 
-function loadProtoDescriptors() {
-  const PROTO_PATH = __dirname + '/protos/event-result.proto';
+function loadProtoDescriptors(protoFile: string) {
+  const PROTO_PATH = `${__dirname}/protos/${protoFile}.proto`;
   const grpc = require('grpc');
   const protoLoader = require('@grpc/proto-loader');
   // Suggested options for similarity to existing grpc.load behavior
@@ -24,7 +25,7 @@ function loadProtoDescriptors() {
   return protoDescriptor;
 }
 
-export default class GRPCServer {
+export class GRPCServer {
 
   private server: Server;
 
@@ -32,7 +33,7 @@ export default class GRPCServer {
     const GRPC_HOST = process.env['GRPC_HOST'] || '0.0.0.0';
     const GRPC_PORT = process.env['GRPC_PORT'] || 50051;
     this.server = new Server();
-    const descriptors = loadProtoDescriptors();
+    const descriptors = loadProtoDescriptors('bet-service');
     this.server.addProtoService(descriptors.eventresultservice, {
       EventResultChange: EventResultImplementation
     });
@@ -50,6 +51,53 @@ export default class GRPCServer {
     } else {
       this.server.tryShutdown(() => console.log('GRPC server shutdown'));
     }
+  }
+
+}
+
+export default class BalanceService {
+
+  private client: any;
+
+  constructor() {
+    const packageDefinition = loadProtoDescriptors('balance-service');
+    this.client = new packageDefinition.BalanceService('balance-service:50051', credentials.createInsecure());
+  }
+
+  public cashBet(params: {
+    userId: string;
+    prize: number;
+  }): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      this.client.CashBet({
+        userId: params.userId,
+        prize: params.prize
+      }, (err: Error, result: { OK: boolean }) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result.OK);
+        }
+      });
+    });
+  }
+
+  public payBet(params: {
+    userId: string;
+    amount: number;
+  }): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      this.client.CashBet({
+        userId: params.userId,
+        amount: params.amount
+      }, (err: Error, result: { OK: boolean }) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result.OK);
+        }
+      });
+    });
   }
 
 }
