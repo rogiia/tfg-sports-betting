@@ -12,9 +12,9 @@ type ResponseFuture = Box<dyn Future<Item=Response<Body>, Error=GenericError> + 
 
 static NOTFOUND: &[u8] = b"Not Found";
 
-pub fn service_controllers(req: Request<Body>, client: &Client<HttpConnector>) -> ResponseFuture {
+pub fn service_controllers(req: Request<Body>, _client: &Client<HttpConnector>) -> ResponseFuture {
   match (req.method(), req.uri().path()) {
-    (&Method::GET, "/event-odds") => {
+    (&Method::POST, "/event-odds") => {
       geteventoddsctrl::get_event_odds(req)
     }
     _ => {
