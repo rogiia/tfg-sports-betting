@@ -13,15 +13,17 @@ struct EventOddsRequestBody {
   sport: String,
   local_team_name: String,
   visitor_team_name: String,
-  local_team_result: u16,
-  visitor_team_result: u16
+  local_team_result: i32,
+  visitor_team_result: i32
 }
 
-struct EventOddsResult {
+pub struct EventOddsResult {
   local_stake: f32,
   draw_stake: f32,
   visitor_stake: f32
 }
+
+const ELO_ADDITION_PER_POINT_OF_DIFFERENCE: i32 = 80;
 
 impl<'de> Deserialize<'de> for EventOddsRequestBody {
   fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -171,6 +173,24 @@ impl Serialize for EventOddsResult {
     }
 }
 
+// https://en.wikipedia.org/wiki/Elo_rating_system#Mathematical_details
+pub fn calculate_probabilities_of_winning(
+  local_team_result: i32,
+  visitor_team_result: i32,
+  local_elo: i32,
+  visitor_elo: i32) -> EventOddsResult {
+  let result_difference: i32 = local_team_result - visitor_team_result;
+  let modified_local_elo: i32 = local_elo + (result_difference * ELO_ADDITION_PER_POINT_OF_DIFFERENCE);
+  let local_stake: f32 = 1.0 / (1.0 + (10 as f32).powi((visitor_elo - modified_local_elo)/400));
+  let visitor_stake: f32 = 1.0 / (1.0 + (10 as f32).powi((modified_local_elo - visitor_elo)/400));
+  let draw_stake: f32 = 1.0 - local_stake - visitor_stake;
+  EventOddsResult {
+    local_stake: local_stake,
+    visitor_stake: visitor_stake,
+    draw_stake: draw_stake
+  }
+}
+
 pub fn get_event_odds(req: Request<Body>) -> ResponseFuture {
   Box::new(req.into_body()
     .concat2()
@@ -178,15 +198,9 @@ pub fn get_event_odds(req: Request<Body>) -> ResponseFuture {
     .and_then(|entire_body| {
       let str = String::from_utf8(entire_body.to_vec())?;
       let body_data: EventOddsRequestBody = serde_json::from_str(&str).unwrap();
-      let difference = body_data.local_team_result - body_data.visitor_team_result;
-      let local_stake = difference as f32;
-      let visitor_stake = difference as f32 * -1.0;
-      let draw_stake = difference as f32 - difference as f32;
-      let response = EventOddsResult {
-        local_stake: local_stake,
-        draw_stake: draw_stake,
-        visitor_stake: visitor_stake
-      };
+      let local_elo = 1500;
+      let visitor_elo = 1500;
+      let response = calculate_probabilities_of_winning(body_data.local_team_result, body_data.visitor_team_result, local_elo, visitor_elo);
       let json = serde_json::to_string(&response)?;
       let response = Response::builder()
         .status(StatusCode::OK)
