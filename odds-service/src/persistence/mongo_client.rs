@@ -1,6 +1,6 @@
 // Utilitzar: https://github.com/ptariche/rust-rocket-mongo-example/blob/master/src/models/user.rs
 
-use mongodb::{Client, doc};
+use mongodb::{Client};
 use std::env;
 
 pub fn connect() {
@@ -13,7 +13,7 @@ pub fn connect() {
     .expect("Failed to initialize client")
 }
 
-pub fn get_team_elo(team_name: String) {
+/*pub fn get_team_elo(team_name: String) {
   let elo_collection = client.db("admin").collection("elo");
   let result = elo_collection.find_one(Some(doc! {
     "team_name": team_name
@@ -39,4 +39,4 @@ pub fn set_team_elo(team_name: String, elo: i32) {
       "elo": elo
     }))
   }
-}
+}*/

@@ -726,6 +726,7 @@ dependencies = [
 name = "odds-service"
 version = "0.1.0"
 dependencies = [
+ "bson 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.12.35 (registry+https://github.com/rust-lang/crates.io-index)",
  "mongodb 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
