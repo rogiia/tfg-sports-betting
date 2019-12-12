@@ -6,7 +6,7 @@ use hyper::{Body, Request, Response, StatusCode, header};
 use futures::{Future};
 use crate::futures::Stream;
 
-use models;
+use super::super::models;
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type ResponseFuture = Box<dyn Future<Item=Response<Body>, Error=GenericError> + Send>;
@@ -200,8 +200,12 @@ pub fn get_event_odds(req: Request<Body>) -> ResponseFuture {
     .and_then(|entire_body| {
       let str = String::from_utf8(entire_body.to_vec())?;
       let body_data: EventOddsRequestBody = serde_json::from_str(&str).unwrap();
-      let local_elo = models::elo::find_one(body_data.local_team_name).unwrap().elo;
-      let visitor_elo = models::elo::find_one(body_data.visitor_team_name).unwrap().elo;
+      let local_doc = models::elo::find_one(body_data.local_team_name).unwrap();
+      let local_elo = bson::from_bson::<models::elo::Model>(bson::Bson::Document(local_doc.unwrap()))
+        .unwrap().elo;
+      let visitor_doc = models::elo::find_one(body_data.visitor_team_name).unwrap();
+      let visitor_elo = bson::from_bson::<models::elo::Model>(bson::Bson::Document(visitor_doc.unwrap()))
+        .unwrap().elo;
       let response = calculate_probabilities_of_winning(body_data.local_team_result, body_data.visitor_team_result, local_elo, visitor_elo);
       let json = serde_json::to_string(&response)?;
       let response = Response::builder()

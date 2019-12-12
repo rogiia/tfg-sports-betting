@@ -8,7 +8,7 @@ use hyper::service::service_fn;
 use std::env;
 
 mod controllers;
-
+mod models;
 mod persistence;
 
 fn main() {

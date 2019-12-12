@@ -1,0 +1,12 @@
+service OddsService {
+  rpc EventResultUpdateOdds (EventResultUpdateOddsRequest) returns (EventResultUpdateOddsResponse);
+}
+
+message EventResultUpdateOddsRequest {
+  required string winnerTeamName = 1;
+  required string loserTeamName = 2;
+}
+
+message EventResultUpdateOddsResponse {
+  required bool OK = 1;
+}

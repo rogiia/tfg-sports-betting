@@ -1,16 +1,17 @@
 // Utilitzar: https://github.com/ptariche/rust-rocket-mongo-example/blob/master/src/models/user.rs
 
-use mongodb::{Client};
-use std::env;
+use mongodb;
+use mongodb::{Client, ThreadedClient};
+use std;
 
-pub fn connect() {
-  let user = env::var("MONGO_USER")
+pub fn connect() -> std::sync::Arc<mongodb::ClientInner>{
+  /*let user = env::var("MONGO_USER")
     .unwrap_or("root".to_string());
   let pass = env::var("MONGO_PASSWORD")
-      .unwrap_or("".to_string());
-
-  Client::with_uri(format!("mongodb://{}:{}@mongo-odds-service:27017/", user, pass));
-    .expect("Failed to initialize client")
+      .unwrap_or("".to_string());*/
+  let client = Client::connect("mongo-odds-service", 27017)
+    .expect("Failed to connect to mongodb");
+  client
 }
 
 /*pub fn get_team_elo(team_name: String) {
