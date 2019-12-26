@@ -3,11 +3,11 @@ service BetService {
 }
 
 message SettleBetRequest {
-  string betId = 1;
-  string result = 2;
+  required string betId = 1;
+  required string result = 2;
 }
 
 message SettleBetResponse {
-  bool OK = 1;
-  bool winner = 2;
+  required bool OK = 1;
+  required bool winner = 2;
 }

@@ -33,7 +33,7 @@ export default class GRPCServer {
     const GRPC_PORT = process.env['GRPC_PORT'] || 50051;
     this.server = new Server();
     const descriptors = loadProtoDescriptors();
-    this.server.addProtoService(descriptors.eventresultservice, {
+    this.server.addService(descriptors.EventResultService, {
       EventResultChange: EventResultImplementation
     });
     this.server.bind(`${GRPC_HOST}:${GRPC_PORT}`, ServerCredentials.createInsecure());

@@ -58,10 +58,5 @@ spec:
               secretKeyRef:
                 name: entityservice-db-credentials
                 key: password
-          - name: RABBITMQ_HOST
-            valueFrom:
-              configMapKeyRef:
-                name: tfg-queue-conf
-                key: name
         ports:
         - containerPort: 8080

@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: odds-service  
+spec:
+  selector:
+    app: odds-service
+    tier: backend
+  ports:
+  - protocol: "TCP"
+    port: 1337
+    targetPort: 1337
+    name: http
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: odds-service
+  labels: 
+    app: odds-service
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: odds-service
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: odds-service
+        tier: backend  
+    spec:                 
+      containers: 
+      - name: odds-service 
+        image: rogeroriol/odds-service:latest
+        env:
+          - name: MONGO_URL
+            value: oddsservice-mongo:27017
+          - name: MONGO_USER
+            valueFrom:
+              secretKeyRef:
+                name: oddsservice-mongo-root-credentials
+                key: username
+          - name: MONGO_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: oddsservice-mongo-root-credentials
+                key: password
+          - name: MONGO_RETRIES
+            value: "8"
+          - name: SQS_URL
+            value: https://sqs.eu-west-1.amazonaws.com/725226204633/tfg-queue
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: aws-credentials
+                key: access_key_id
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: aws-credentials
+                key: secret_access_key
+        ports:
+        - containerPort: 1337

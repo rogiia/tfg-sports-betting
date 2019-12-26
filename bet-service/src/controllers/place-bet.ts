@@ -9,7 +9,7 @@ import {
 } from 'http-status-codes';
 import * as jwt from 'jsonwebtoken';
 import Persistence from '../persistence';
-import BalanceService from '../grpc';
+import { BalanceService } from '../grpc';
 
 const JWT_SECRET = process.env['JWT_SECRET'] || 'magic';
 const balanceService = new BalanceService();

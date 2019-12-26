@@ -4,19 +4,19 @@ service BalanceService {
 }
 
 message CashBetRequest {
-  string userId = 1;
-  float prize = 2;
+  required string userId = 1;
+  required float prize = 2;
 }
 
 message CashBetResponse {
-  bool OK = 1;
+  required bool OK = 1;
 }
 
 message PayBetRequest {
-  string userId = 1;
-  float amount = 2;
+  required string userId = 1;
+  required float amount = 2;
 }
 
 message PayBetResponse {
-  bool OK = 1;
+  required bool OK = 1;
 }

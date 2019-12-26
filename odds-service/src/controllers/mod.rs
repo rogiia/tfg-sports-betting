@@ -6,6 +6,7 @@ use hyper::{Body, Request, Response, Client, Method, StatusCode};
 use hyper::client::HttpConnector;
 
 mod geteventoddsctrl;
+mod handleeventresultctrl;
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type ResponseFuture = Box<dyn Future<Item=Response<Body>, Error=GenericError> + Send>;
@@ -16,6 +17,9 @@ pub fn service_controllers(req: Request<Body>, _client: &Client<HttpConnector>) 
   match (req.method(), req.uri().path()) {
     (&Method::POST, "/event-odds") => {
       geteventoddsctrl::get_event_odds(req)
+    }
+    (&Method::POST, "/event-result") => {
+      handleeventresultctrl::handle_event_result(req)
     }
     _ => {
       let body = Body::from(NOTFOUND);

@@ -4,6 +4,9 @@ ENV NODE_ENV production
 ENV NODE_PORT 8080
 COPY package*.json ./
 RUN npm install
-COPY ./dist .
+COPY src ./src
+COPY tsconfig.json ./tsconfig.json
+RUN npm run build
+COPY src/grpc/protos ./dist/grpc/protos
 EXPOSE 8080 50051
-CMD [ "node", "main.js" ]
+CMD [ "node", "dist/main.js" ]

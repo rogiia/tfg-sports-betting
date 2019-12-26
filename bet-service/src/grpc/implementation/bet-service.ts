@@ -1,12 +1,11 @@
 import Persistence from '../../persistence';
-import BalanceService from '..';
-
-const balanceService = new BalanceService();
 
 export default async function SettleBet(params: {
   betId: string;
   result: 'L' | 'D' | 'V'
 }) {
+  const { BalanceService } = await import('..');
+  const balanceService = new BalanceService();
   const bet = await Persistence.findBetById(params.betId);
   if (bet) {
     const winner = bet.result === params.result;

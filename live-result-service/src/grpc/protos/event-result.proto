@@ -3,11 +3,11 @@ service EventResultService {
 }
 
 message EventResultRequest {
-  string eventId = 1;
-  int32 localTeamResult = 2;
-  int32 visitorTeamResult = 3;
+  required string eventId = 1;
+  required int32 localTeamResult = 2;
+  required int32 visitorTeamResult = 3;
 }
 
 message EventResultResponse {
-  bool OK = 1;
+  required bool OK = 1;
 }
