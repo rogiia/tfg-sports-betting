@@ -15,62 +15,12 @@
         :key="sport"
         :value="'tab-' + sport">
         <v-container fluid>
-          <v-card class="mx-auto tfg-event-card">
-            <v-container fluid>
-              <v-row>
-                <v-col cols="6">
-                  <v-icon>mdi-tshirt-crew-outline</v-icon>&nbsp;
-                  F.C. BARCELONA
-                </v-col>
-                <v-col cols="3">
-                  2
-                </v-col>
-                <v-col cols="3">
-                  <v-btn class="float-right" @click="toggleDialog()">1.30</v-btn>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="6">
-                  <v-icon>mdi-tshirt-crew-outline</v-icon>&nbsp;
-                  VILLAREAL
-                </v-col>
-                <v-col cols="3">
-                  1
-                </v-col>
-                <v-col cols="3">
-                  <v-btn class="float-right">3.10</v-btn>
-                </v-col>
-              </v-row>
-            </v-container>
-          </v-card>
-          <v-card class="mx-auto tfg-event-card">
-            <v-container fluid>
-              <v-row>
-                <v-col cols="6">
-                  <v-icon>mdi-tshirt-crew-outline</v-icon>&nbsp;
-                  F.C. BARCELONA
-                </v-col>
-                <v-col cols="3">
-                  2
-                </v-col>
-                <v-col cols="3">
-                  <v-btn class="float-right">1.30</v-btn>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="6">
-                  <v-icon>mdi-tshirt-crew-outline</v-icon>&nbsp;
-                  VILLAREAL
-                </v-col>
-                <v-col cols="3">
-                  1
-                </v-col>
-                <v-col cols="3">
-                  <v-btn class="float-right">3.10</v-btn>
-                </v-col>
-              </v-row>
-            </v-container>
-          </v-card>
+          <div v-if="events[sport].length === 0">
+            No hi ha esdeveniments disponibles ara mateix
+          </div>
+          <event-item class="tfg-event-card"
+            v-for="event in events[sport]" :key="event.eventId"
+            :event="event" />
         </v-container>
       </v-tab-item>
     </v-tabs>
@@ -84,6 +34,11 @@
 <script lang="ts">
   import Vue from 'vue';
   import BetModal from '../components/BetModal.vue';
+  import EventItem from '../components/EventItem.vue';
+  import {
+    getEventsBySport,
+    IEvent,
+  } from '../services/event-service';
   const sportsTabs = {
     futbol: {
       name: 'Futbol',
@@ -98,16 +53,36 @@
       icon: 'hockey-sticks',
     },
   };
+  const INITAL_SPORT = 'futbol';
+
+  const newEmptyEventsList = (): IEvent[] => {
+    return [];
+  };
+
   export default Vue.extend({
     components: {
       'bet-modal': BetModal,
+      'event-item': EventItem,
+    },
+    async created() {
+      this.events[INITAL_SPORT] = await getEventsBySport(this.sportsTabs[INITAL_SPORT].name);
     },
     data: () => {
       return {
         selectedTab: 'futbol',
         sportsTabs,
         dialogOpen: false,
+        events: {
+          futbol: newEmptyEventsList(),
+          basquet: newEmptyEventsList(),
+          hoquei: newEmptyEventsList(),
+        },
       };
+    },
+    watch: {
+      async selectedTab(newTab: "futbol" | "basquet" | "hoquei") {
+        this.events[newTab] = await getEventsBySport(this.sportsTabs[newTab].name);
+      }
     },
     methods: {
       toggleDialog() {

@@ -13,3 +13,11 @@ new Vue({
   vuetify,
   render: (h) => h(App),
 }).$mount('#app');
+
+const urlParams = new URLSearchParams(window.location.search);
+const code = urlParams.get('code');
+if (code) {
+  store.dispatch('populateToken', code);
+  var clean_uri = location.protocol + "//" + location.host + location.pathname;
+  window.history.replaceState({}, document.title, clean_uri);
+}
