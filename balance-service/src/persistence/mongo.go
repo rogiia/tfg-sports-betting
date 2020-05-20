@@ -1,9 +1,10 @@
 package persistence
 
 import (
+	"log"
 	"time"
 
-	"../common"
+	common "../common"
 	mgo "gopkg.in/mgo.v2"
 )
 
@@ -15,13 +16,12 @@ type MongoDB struct {
 
 // Init initializes mongo database
 func (db *MongoDB) Init() error {
-	db.Databasename = common.Config.MongoDbName
-
+	log.Println("Connecting to database..")
 	// DialInfo holds options for establishing a session with a MongoDB cluster.
 	dialInfo := &mgo.DialInfo{
 		Addrs:    []string{common.Config.MongoAddr}, // Get HOST + PORT
 		Timeout:  60 * time.Second,
-		Database: db.Databasename,             // Database name
+		Database: common.Config.MongoDbName,   // Database name
 		Username: common.Config.MongoUsername, // Username
 		Password: common.Config.MongoPassword, // Password
 	}
@@ -32,6 +32,7 @@ func (db *MongoDB) Init() error {
 	db.MgDbSession, err = mgo.DialWithInfo(dialInfo)
 
 	if err != nil {
+		log.Fatal("Cannot connect to database")
 		panic(err)
 	}
 

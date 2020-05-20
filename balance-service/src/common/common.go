@@ -1,6 +1,13 @@
 package common
 
-import "os"
+import (
+	"encoding/json"
+	"log"
+	"os"
+	"regexp"
+
+	"github.com/dgrijalva/jwt-go"
+)
 
 // Configuration stores setting values
 type Configuration struct {
@@ -23,6 +30,7 @@ var (
 
 // LoadConfig loads configuration from the config file
 func LoadConfig() error {
+	log.Println("Loading app configuration...")
 	Config = &Configuration{
 		Port:          os.Getenv("PORT"),
 		MongoAddr:     os.Getenv("MONGO_URL"),
@@ -31,5 +39,24 @@ func LoadConfig() error {
 		MongoPassword: os.Getenv("MONGO_PASSWORD"),
 	}
 
+	log.Println("App configuration loaded.")
 	return nil
+}
+
+// TokenBody typing
+type TokenBody struct {
+	username string
+}
+
+// ParseAuthorizationHeader : Parse authorization header, extracting user id
+func ParseAuthorizationHeader(authorization string) (string, error) {
+	re := regexp.MustCompile(`^Bearer .+\.(.+)\..+$`)
+	tokeninfo := string(re.FindSubmatch([]byte(authorization))[1])
+	parsed, err := jwt.DecodeSegment(tokeninfo)
+	body := TokenBody{}
+	err = json.Unmarshal(parsed, &body)
+	if err != nil {
+		return "", err
+	}
+	return body.username, nil
 }
