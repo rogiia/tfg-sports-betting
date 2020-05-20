@@ -1,15 +1,11 @@
-FROM golang:latest as builder
-RUN apt-get update && apt-get -y install git
-RUN mkdir /build 
-ADD . /build/
-WORKDIR /build 
+FROM golang:latest
+WORKDIR /usr/src/app
+ENV PORT 8080
+COPY get-dependencies.sh .
+RUN chmod u+x get-dependencies.sh
 RUN ./get-dependencies.sh
+COPY src ./src
 RUN go build src/main.go
-
-FROM alpine
-RUN adduser -S -D -H -h /app appuser
-USER appuser
-COPY --from=builder /build/main /app/
-WORKDIR /app
+COPY protos ./protos
 EXPOSE 8080 50051
-CMD ["./main"]
+CMD [ "./main" ]

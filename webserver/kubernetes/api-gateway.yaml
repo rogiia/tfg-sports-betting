@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: api-gateway
+  namespace: default
+spec:
+  rules:
+  - host: events.sports-betting
+    http:
+      paths:
+      - backend:
+          serviceName: event-service
+          servicePort: 8080
+        path: /
+  - host: live-result.sports-betting
+    http:
+      paths:
+      - backend:
+          serviceName: liveresult-service
+          servicePort: 8080
+        path: /
+  - host: bets.sports-betting
+    http:
+      paths:
+      - backend:
+          serviceName: bet-service
+          servicePort: 8080
+        path: /
+  - host: odds.sports-betting
+    http:
+      paths:
+      - backend:
+          serviceName: odds-service
+          servicePort: 8080
+        path: /
+  - host: balance.sports-betting
+    http:
+      paths:
+      - backend:
+          serviceName: balance-service
+          servicePort: 8080
+        path: /
