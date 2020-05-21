@@ -12,7 +12,7 @@
           <v-container>
             <v-row>
               <v-col cols="12">
-                <h1 class="text-center">1500.00€</h1>
+                <h1 class="text-center">{{$store.getters['balance'].toFixed(2)}}€</h1>
               </v-col>
             </v-row>
           </v-container>
@@ -25,7 +25,7 @@
             <v-text-field
               label="Afegeix balanç"
               suffix="€"
-              v-model="newBalance"
+              v-model.number="newBalance"
             >
             </v-text-field>
             <v-btn
@@ -54,17 +54,31 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import {
+  addBalance
+} from '../services/balance-service';
 
 export default Vue.extend({
   props: ['open'],
+  created() {
+    if (this.$store.getters['balance'] === null) {
+      this.close();
+    }
+  },
   data: () => {
     return {
       newBalance: 0,
     };
   },
   methods: {
-    addBalance(balance: number) {
-      console.log(balance);
+    async addBalance(balance: number) {
+      if (this.$store.getters['isAuthenticated']) {
+        const newBalance = await addBalance(this.$store.getters['getAccessToken'], balance);
+        this.$store.commit('setBalance', newBalance);
+        this.close();
+      } else {
+        this.close();
+      }
     },
     close() {
       this.$emit('close');

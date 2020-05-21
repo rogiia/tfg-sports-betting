@@ -1,6 +1,8 @@
 package models
 
 import (
+	"log"
+
 	"../persistence"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -12,8 +14,8 @@ const (
 
 // Balance model
 type Balance struct {
-	userID  string
-	balance float32
+	UserID  string  `json:"userid"`
+	Balance float32 `json:"balance"`
 }
 
 // GetBalance : Get user balance
@@ -25,29 +27,54 @@ func GetBalance(userID string) (float32, error) {
 	collection := sessionCopy.DB(persistence.Database.Databasename).C(COLLECTION)
 
 	var balance Balance
-	err := collection.Find(bson.M{userID: userID}).One(&balance)
-	if balance.userID == "" {
-		balance = Balance{
-			userID:  userID,
-			balance: 0,
+	err := collection.Find(bson.M{"userid": userID}).One(&balance)
+	log.Println(balance)
+	if balance.UserID == "" {
+		var newBalance = Balance{
+			UserID:  userID,
+			Balance: 0,
 		}
-		err := collection.Insert(balance)
+		err := collection.Insert(newBalance)
 		if err != nil {
+			log.Println("Error inserting new balance")
+			log.Println(err)
 			return 0, err
 		}
-		return balance.balance, nil
+		return balance.Balance, nil
 	}
-	return balance.balance, err
+	return balance.Balance, err
 }
 
-// UpsertBalance : Insert adds a new entity into database
-func UpsertBalance(balance Balance) error {
+// UpdateBalance : Insert adds a new entity into database
+func UpdateBalance(balance Balance) error {
 	sessionCopy := persistence.Database.MgDbSession.Copy()
 	defer sessionCopy.Close()
 
 	// Get a collection to execute the query against.
 	collection := sessionCopy.DB(persistence.Database.Databasename).C(COLLECTION)
 
-	_, err := collection.Upsert(balance.userID, &balance)
+	err := collection.Update(bson.M{"userid": balance.UserID}, &balance)
 	return err
+}
+
+// AddBalance : Insert adds a new entity into database
+func AddBalance(userID string, amount float32) (float32, error) {
+	var currentBalance, err = GetBalance(userID)
+	if err != nil {
+		log.Println("Cannot find user current balance")
+		log.Println(err)
+		return 0, err
+	}
+	var newAmount = currentBalance + amount
+	var newBalance = Balance{
+		UserID:  userID,
+		Balance: newAmount,
+	}
+	var upsertErr = UpdateBalance(newBalance)
+	if upsertErr != nil {
+		log.Println("Cannot update user current balance")
+		log.Println(upsertErr)
+		return currentBalance, upsertErr
+	}
+	return newAmount, nil
 }

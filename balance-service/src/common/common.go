@@ -46,7 +46,7 @@ func LoadConfig() error {
 
 // TokenBody typing
 type TokenBody struct {
-	username string
+	Username string `json:"username"`
 }
 
 // ParseAuthorizationHeader : Parse authorization header, extracting user id
@@ -63,5 +63,5 @@ func ParseAuthorizationHeader(authorization string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return body.username, nil
+	return body.Username, nil
 }

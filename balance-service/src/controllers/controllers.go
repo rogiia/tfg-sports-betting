@@ -12,6 +12,7 @@ var path = "/api/balance"
 func SetupRoutes() {
 	r := gin.Default()
 	r.GET(path, GetBalance)
+	r.POST(path, AddBalance)
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
 	corsConfig.AllowHeaders = []string{"Origin", "Authorization"}
