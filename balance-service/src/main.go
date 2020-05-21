@@ -5,6 +5,7 @@ import (
 
 	"./common"
 	"./controllers"
+	"./grpc"
 	"./persistence"
 )
 
@@ -17,4 +18,5 @@ func main() {
 	persistence.Database.Init()
 	defer persistence.Database.Close()
 	controllers.SetupRoutes()
+	grpc.Start()
 }

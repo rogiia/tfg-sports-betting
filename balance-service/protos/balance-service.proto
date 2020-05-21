@@ -1,0 +1,22 @@
+service BalanceService {
+  rpc CashBet (CashBetRequest) returns (CashBetResponse);
+  rpc PayBet (PayBetRequest) returns (PayBetResponse);
+}
+
+message CashBetRequest {
+  required string userId = 1;
+  required float prize = 2;
+}
+
+message CashBetResponse {
+  required bool OK = 1;
+}
+
+message PayBetRequest {
+  required string userId = 1;
+  required float amount = 2;
+}
+
+message PayBetResponse {
+  required bool OK = 1;
+}
