@@ -5,6 +5,7 @@ use serde::de::{self, Deserialize, Deserializer, Visitor, SeqAccess, MapAccess};
 use hyper::{Body, Request, Response, StatusCode, header};
 use futures::{Future};
 use crate::futures::Stream;
+use chrono::Local;
 
 use super::super::models;
 
@@ -26,6 +27,7 @@ pub struct EventOddsResult {
 }
 
 const ELO_ADDITION_PER_POINT_OF_DIFFERENCE: i32 = 80;
+const INITIAL_ELO: i32 = 1500;
 
 impl<'de> Deserialize<'de> for EventOddsRequestBody {
   fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -199,20 +201,61 @@ pub fn get_event_odds(req: Request<Body>) -> ResponseFuture {
     .from_err()
     .and_then(|entire_body| {
       let str = String::from_utf8(entire_body.to_vec())?;
-      let body_data: EventOddsRequestBody = serde_json::from_str(&str).unwrap();
-      let local_doc = models::elo::find_one(body_data.local_team_name).unwrap();
-      let local_elo = bson::from_bson::<models::elo::Model>(bson::Bson::Document(local_doc.unwrap()))
-        .unwrap().elo;
-      let visitor_doc = models::elo::find_one(body_data.visitor_team_name).unwrap();
-      let visitor_elo = bson::from_bson::<models::elo::Model>(bson::Bson::Document(visitor_doc.unwrap()))
-        .unwrap().elo;
-      let response = calculate_probabilities_of_winning(body_data.local_team_result, body_data.visitor_team_result, local_elo, visitor_elo);
-      let json = serde_json::to_string(&response)?;
-      let response = Response::builder()
-        .status(StatusCode::OK)
-        .header(header::CONTENT_TYPE, "application/json")
-        .body(Body::from(json))?;
-      Ok(response)
+      let body_data: EventOddsRequestBody = serde_json::from_str(&str)?;
+      let result = get_event_odds_handler(body_data);
+      println!("{} - Got response", Local::now().format("%Y-%m-%dT%H:%M:%S"));
+      let response;
+      match result {
+        Ok(result) => {
+          println!("{} - Response successful", Local::now().format("%Y-%m-%dT%H:%M:%S"));
+          response = Response::builder()
+            .status(StatusCode::OK)
+            .header(header::CONTENT_TYPE, "application/json")
+            .header("Access-Control-Allow-Origin", "*")
+            .header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+            .header("Access-Control-Allow-Headers", "X-Requested-With,Content-type")
+            .body(Body::from(result));
+        },
+        Err(e) => {
+          println!("{} - Error during request", Local::now().format("%Y-%m-%dT%H:%M:%S"));
+          response = Response::builder()
+            .status(StatusCode::INTERNAL_SERVER_ERROR)
+            .header(header::CONTENT_TYPE, "text/plain")
+            .header("Access-Control-Allow-Origin", "*")
+            .header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+            .header("Access-Control-Allow-Headers", "X-Requested-With,Content-type")
+            .body(Body::from(e));
+        }
+      }
+      Ok(response.unwrap())
     })
   )
+}
+
+fn get_event_odds_handler(body: EventOddsRequestBody) -> Result<String, String> {
+  println!("{} - Getting event odds for event between {} and {}, with a score of {}-{}",
+    Local::now().format("%Y-%m-%dT%H:%M:%S"),
+    body.local_team_name,
+    body.visitor_team_name,
+    body.local_team_result,
+    body.visitor_team_result);
+  let local_doc = models::elo::find_one(body.local_team_name)?;
+  let local_elo;
+  match local_doc {
+    Some(doc) => local_elo = bson::from_bson::<models::elo::Model>(bson::Bson::Document(doc)).or(Err("Cannot deserialize local team info"))?.elo,
+    None => local_elo = INITIAL_ELO,
+  }
+  let visitor_doc = models::elo::find_one(body.visitor_team_name)?;
+  let visitor_elo;
+  match visitor_doc {
+    Some(doc) => visitor_elo = bson::from_bson::<models::elo::Model>(bson::Bson::Document(doc)).or(Err("Cannot deserialize visitor team info"))?.elo,
+    None => visitor_elo = INITIAL_ELO,
+  }
+  let probabilities = calculate_probabilities_of_winning(body.local_team_result, body.visitor_team_result, local_elo, visitor_elo);
+  let response = EventOddsResult {
+    local_stake: 1.33 + ((probabilities.local_stake - probabilities.visitor_stake) / 150.0).max(-0.32),
+    draw_stake: 1.00 + ((probabilities.local_stake - probabilities.visitor_stake).abs() / 150.0).max(0.01),
+    visitor_stake: 1.33 + ((probabilities.visitor_stake - probabilities.local_stake) / 150.0).max(-0.32),
+  };
+  Ok(serde_json::to_string(&response).or(Err("Cannot serialize response to JSON format"))?)
 }

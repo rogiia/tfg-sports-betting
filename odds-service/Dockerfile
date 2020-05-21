@@ -1,13 +1,30 @@
-FROM rust:1.31
+# select build image
+FROM rust:1.23 as build
 
-WORKDIR /usr/src/odds-service
-COPY . .
+# create a new empty shell project
+RUN USER=root cargo new --bin odds-service
+WORKDIR /odds-service
 
-RUN rustup update
-RUN rustup toolchain install nightly
-RUN rustup component add rustfmt --toolchain nightly
-RUN rustup default nightly
-RUN cargo install --path .
+# copy over your manifests
+COPY ./Cargo.lock ./Cargo.lock
+COPY ./Cargo.toml ./Cargo.toml
+
+# this build step will cache your dependencies
+RUN cargo build --release
+RUN rm src/*.rs
+
+# copy your source tree
+COPY ./src ./src
+
+# build for release
+RUN rm ./target/release/deps/odds-service*
 RUN cargo build --release
 
-CMD ["target/release/odds-service"]
+# our final base
+FROM rust:1.23
+
+# copy the build artifact from the build stage
+COPY --from=build /odds-service/target/release/odds-service .
+
+# set the startup command to run your binary
+CMD ["./odds-service"]

@@ -8,8 +8,8 @@ spec:
     tier: backend
   ports:
   - protocol: "TCP"
-    port: 1337
-    targetPort: 1337
+    port: 8080
+    targetPort: 8080
     name: http
   type: NodePort
 ---
@@ -36,6 +36,8 @@ spec:
       - name: odds-service 
         image: rogeroriol/odds-service:latest
         env:
+          - name: HTTP_PORT
+            value: "8080"
           - name: MONGO_URL
             value: oddsservice-mongo:27017
           - name: MONGO_USER
@@ -63,4 +65,4 @@ spec:
                 name: aws-credentials
                 key: secret_access_key
         ports:
-        - containerPort: 1337
+        - containerPort: 8080

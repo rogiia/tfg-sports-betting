@@ -7,30 +7,29 @@ import {
 } from 'http-status-codes';
 import * as jwt from 'jsonwebtoken';
 import Persistence from '../persistence';
+import { getToken } from '../utils/get-token';
 
-const JWT_SECRET = process.env['JWT_SECRET'] || 'magic';
 const router = express.Router();
 
-function containsUserId(decoded: object | string): decoded is { userId: string } {
-  return typeof decoded === 'object' && decoded.hasOwnProperty('userId');
+function containsUserId(decoded: object | string): decoded is { username: string } {
+  return typeof decoded === 'object' && decoded.hasOwnProperty('username');
 }
 
 router.get('/', async(req: express.Request, res: express.Response) => {
   try {
-    const token = req.headers['authorization'];
+    const token = getToken(req);
     if (token) {
-      jwt.verify(token, JWT_SECRET, async(err, decoded) => {
-        if (err) {
-          res.status(FORBIDDEN).json({ message: err });
+      const decoded = jwt.decode(token);
+      if (decoded === null) {
+        res.status(FORBIDDEN).json({ message: 'Invalid token' });
+      } else {
+        if (containsUserId(decoded)) {
+          const bets = await Persistence.findBetsByUser(decoded.username);
+          res.status(OK).json({ bets });
         } else {
-          if (containsUserId(decoded)) {
-            const bets = await Persistence.findBetsByUser(decoded.userId);
-            res.status(OK).json({ bets });
-          } else {
-            res.status(FORBIDDEN).json({ message: 'Malformed token' });
-          }
+          res.status(FORBIDDEN).json({ message: 'Malformed token' });
         }
-      });
+      }
     } else {
       res.status(UNAUTHORIZED).json({ message: 'Missing authorization' });
     }

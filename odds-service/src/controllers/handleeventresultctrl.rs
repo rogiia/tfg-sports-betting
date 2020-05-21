@@ -38,9 +38,9 @@ pub fn handle_event_result(req: Request<Body>) -> ResponseFuture {
       } else if winning_team.elo > losing_team.elo {
         winning_team_expectancy = 0;
       }
-      let K_FACTOR = 32;
-      let new_winning_team_elo = winning_team.elo + K_FACTOR * (1 - winning_team_expectancy);
-      let new_losing_team_elo = losing_team.elo + K_FACTOR * (-1 - (winning_team_expectancy * -1));
+      let k_factor = 32;
+      let new_winning_team_elo = winning_team.elo + k_factor * (1 - winning_team_expectancy);
+      let new_losing_team_elo = losing_team.elo + k_factor * (-1 - (winning_team_expectancy * -1));
       winning_team.elo = new_winning_team_elo;
       losing_team.elo = new_losing_team_elo;
       winning_team.update()
@@ -54,6 +54,9 @@ pub fn handle_event_result(req: Request<Body>) -> ResponseFuture {
       let response = Response::builder()
         .status(StatusCode::OK)
         .header(header::CONTENT_TYPE, "application/json")
+        .header("Access-Control-Allow-Origin", "*")
+        .header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        .header("Access-Control-Allow-Headers", "X-Requested-With,Content-type")
         .body(Body::from(json))?;
       Ok(response)
     })
