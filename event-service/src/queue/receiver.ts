@@ -17,7 +17,7 @@ function parseMessage(message: string): {
 } | null {
   // Handle sport event message
   const eventMatches = message.match(/^(\w+) ([\d\w']+) (.+?) (\d+) - (\d+) (.+)$/);
-  if (eventMatches && eventMatches.length === 6) {
+  if (eventMatches && eventMatches.length === 7) {
     const [msg, sport, matchTime, localTeam, localTeamResult, visitorTeamResult, visitorTeam] = eventMatches;
     return {
       sport,
@@ -41,11 +41,14 @@ export default class QueueReceiver {
       handleMessage: async (message) => {
         if (message.Body) {
           // Parse event from message
+          console.log(`Received message: ${message.Body}`);
           const event = parseMessage(message.Body);
           if (event) {
             let eventId: string;
+            console.log('Looking for already existing events');
             const currentEvent = await Persistence.findCurrentEventByTeams(event.localTeam, event.visitorTeam);
             if (event.matchTime === 'END') {
+              console.log('Ending current event');
               if (currentEvent && currentEvent.length > 0) {
                 await Persistence.updateEventById(currentEvent[0]._id, {
                   sport: event.sport,
@@ -57,6 +60,7 @@ export default class QueueReceiver {
               }
             } else {
               if (currentEvent && currentEvent.length > 0) {
+                console.log('Updating current event');
                 await Persistence.updateEventById(currentEvent[0]._id, {
                   sport: event.sport,
                   localTeam: event.localTeam,
@@ -65,6 +69,7 @@ export default class QueueReceiver {
                 });
                 eventId = currentEvent[0]._id;
               } else {
+                console.log('Creating new event');
                 const newEvent = await Persistence.create({
                   sport: event.sport,
                   localTeam: event.localTeam,

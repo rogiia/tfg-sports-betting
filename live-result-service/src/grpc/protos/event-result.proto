@@ -1,5 +1,5 @@
 service EventResultService {
-  rpc EventResultChange (EventResultRequest) returns (EventResultResponse);
+  rpc EventResultChange (EventResultRequest) returns (EventResultResponse) {}
 }
 
 message EventResultRequest {

@@ -27,7 +27,7 @@ export default class EventResultService {
 
   constructor() {
     const packageDefinition = loadProtoDescriptors();
-    this.client = new packageDefinition.EventResultService('live-result-service:50051', credentials.createInsecure());
+    this.client = new packageDefinition.EventResultService('liveresult-service:50051', credentials.createInsecure());
   }
 
   public eventResultChange(event: {
@@ -36,7 +36,7 @@ export default class EventResultService {
     visitorTeamResult: number;
   }): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      this.client.EventResultChange({
+      this.client.eventResultChange({
         eventId: event.eventId,
         localTeamResult: event.localTeamResult,
         visitorTeamResult: event.visitorTeamResult

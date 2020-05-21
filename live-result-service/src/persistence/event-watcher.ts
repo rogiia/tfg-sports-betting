@@ -10,6 +10,7 @@ export default class EventWatcher {
 
   private static subscribers: { [eventId: string]: EventWatcherCallback[] } = {};
 
+
   public static subscribe(eventId: string, callback: EventWatcherCallback): {
     event: IEvent | null,
     unsubscribe?: (...args: any[]) => void
@@ -32,12 +33,13 @@ export default class EventWatcher {
       };
     }
     return {
-      event: Object.assign(event, { eventId }),
+      event: event !== null ? Object.assign(event, { eventId }): null,
       unsubscribe
     };
   }
 
   public static emit(event: IEvent): void {
+    console.log(`Updating event ${event.eventId}`);
     if (this.events.hasOwnProperty(event.eventId)) {
       this.events[event.eventId].localTeamResult = event.localTeamResult;
       this.events[event.eventId].visitorTeamResult = event.visitorTeamResult;
@@ -47,6 +49,7 @@ export default class EventWatcher {
         visitorTeamResult: event.visitorTeamResult
       };
     }
+    console.log(`Updated events: ${JSON.stringify(this.events)}`);
     if (this.subscribers[event.eventId]) {
       this.subscribers[event.eventId].forEach(callback => callback(event));
     }

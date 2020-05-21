@@ -25,8 +25,15 @@ export default class Server {
 
   public async start(port: number = 3000): Promise<void> {
     this.app.use(helmet());
-    this.app.use(compression());
     this.app.use(morgan('combined'));
+
+    this.app.use(function (req, res, next) {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+      res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+      next();
+    });
+
     this.app.use('/event', GetEventResultController);
     const listener = this.app.listen(port, () => console.log(`Server listening on port ${port}`));
     listener.on('close', () => {

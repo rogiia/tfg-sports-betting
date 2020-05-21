@@ -46,13 +46,14 @@ export default class Persistence {
         reject(new MongoConnectionError());
       }
       EventModel.find({
-        localTeamName,
-        visitorTeamName,
+        localTeam: localTeamName,
+        visitorTeam: visitorTeamName,
         ended: false
       }, (err, res: (mongoose.Document & IEvent)[]) => {
         if (err) {
           reject(err);
         }
+        console.log(`Searching for event with teams ${localTeamName} - ${visitorTeamName} got result ${JSON.stringify(res)}`);
         resolve(res);
       });
     });

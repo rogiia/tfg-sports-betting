@@ -9,6 +9,7 @@ function loadProtoDescriptors() {
   const PROTO_PATH = __dirname + '/protos/event-result.proto';
   const grpc = require('grpc');
   const protoLoader = require('@grpc/proto-loader');
+  console.log(`Loading proto definitions from ${PROTO_PATH}`);
   // Suggested options for similarity to existing grpc.load behavior
   const packageDefinition = protoLoader.loadSync(
     PROTO_PATH,
@@ -33,8 +34,8 @@ export default class GRPCServer {
     const GRPC_PORT = process.env['GRPC_PORT'] || 50051;
     this.server = new Server();
     const descriptors = loadProtoDescriptors();
-    this.server.addService(descriptors.EventResultService, {
-      EventResultChange: EventResultImplementation
+    this.server.addService(descriptors.EventResultService.service, {
+      eventResultChange: EventResultImplementation
     });
     this.server.bind(`${GRPC_HOST}:${GRPC_PORT}`, ServerCredentials.createInsecure());
   }
