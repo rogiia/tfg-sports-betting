@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"os"
 	"regexp"
@@ -51,7 +52,11 @@ type TokenBody struct {
 // ParseAuthorizationHeader : Parse authorization header, extracting user id
 func ParseAuthorizationHeader(authorization string) (string, error) {
 	re := regexp.MustCompile(`^Bearer .+\.(.+)\..+$`)
-	tokeninfo := string(re.FindSubmatch([]byte(authorization))[1])
+	bearer := re.FindSubmatch([]byte(authorization))
+	if len(bearer) != 2 {
+		return "", errors.New("Missing authorization")
+	}
+	tokeninfo := string(bearer[1])
 	parsed, err := jwt.DecodeSegment(tokeninfo)
 	body := TokenBody{}
 	err = json.Unmarshal(parsed, &body)

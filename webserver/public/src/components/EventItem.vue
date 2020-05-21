@@ -10,7 +10,7 @@
           <v-col cols="3">
             {{result.local}}
           </v-col>
-          <v-col cols="3">
+          <v-col cols="3" v-if="odds.local">
             <v-btn class="float-right" @click="toggleDialog()">{{odds.local}}</v-btn>
           </v-col>
         </v-row>
@@ -22,7 +22,7 @@
           <v-col cols="3">
             {{result.visitor}}
           </v-col>
-          <v-col cols="3">
+          <v-col cols="3" v-if="odds.visitor">
             <v-btn class="float-right">{{odds.visitor}}</v-btn>
           </v-col>
         </v-row>

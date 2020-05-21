@@ -8,7 +8,8 @@ export async function getUserBalance(token: string): Promise<number | null> {
   });
   if (response.status === 200) {
     const result = await response.json();
-    if (result && result.balance) {
+    console.log(result);
+    if (result && typeof result.balance === 'number') {
       return result.balance;
     }
   }
@@ -16,7 +17,7 @@ export async function getUserBalance(token: string): Promise<number | null> {
 }
 
 export async function addBalance(token: string, amount: number): Promise<number> {
-  const response = await fetch(`${URL}/api/balance`, {
+  const response = await fetch(`${URL}/api/balance/`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`
@@ -27,7 +28,7 @@ export async function addBalance(token: string, amount: number): Promise<number>
   });
   if (response.status === 200) {
     const result = await response.json();
-    if (result && result.balance) {
+    if (result && typeof result.balance === 'number') {
       return result.balance;
     }
   }
