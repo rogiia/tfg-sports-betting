@@ -2,6 +2,7 @@ import * as express from 'express';
 import * as helmet from 'helmet';
 import * as compression from 'compression';
 import * as morgan from 'morgan';
+import * as bodyParser from 'body-parser';
 
 import {
   GetUserBetsController,
@@ -34,6 +35,10 @@ export default class Server {
     }
     this.app.use(helmet());
     this.app.use(compression());
+    this.app.use(bodyParser.json());
+    this.app.use(bodyParser.urlencoded({
+      extended: true
+    })); 
     this.app.use(function (req, res, next) {
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');

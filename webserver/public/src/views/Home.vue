@@ -24,16 +24,11 @@
         </v-container>
       </v-tab-item>
     </v-tabs>
-    <bet-modal
-      :open="dialogOpen"
-      @close="dialogOpen = false"
-    ></bet-modal>
   </div>
 </template>
 
 <script lang="ts">
   import Vue from 'vue';
-  import BetModal from '../components/BetModal.vue';
   import EventItem from '../components/EventItem.vue';
   import {
     getEventsBySport,
@@ -61,7 +56,6 @@
 
   export default Vue.extend({
     components: {
-      'bet-modal': BetModal,
       'event-item': EventItem,
     },
     async created() {
@@ -71,7 +65,6 @@
       return {
         selectedTab: 'futbol',
         sportsTabs,
-        dialogOpen: false,
         events: {
           futbol: newEmptyEventsList(),
           basquet: newEmptyEventsList(),
@@ -83,11 +76,6 @@
       async selectedTab(newTab: "futbol" | "basquet" | "hoquei") {
         this.events[newTab] = await getEventsBySport(this.sportsTabs[newTab].name);
       }
-    },
-    methods: {
-      toggleDialog() {
-        this.dialogOpen = !this.dialogOpen;
-      },
     },
   });
 </script>

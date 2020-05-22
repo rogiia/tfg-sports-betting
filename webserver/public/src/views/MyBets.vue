@@ -20,7 +20,7 @@
                 <v-list-item-subtitle v-text="'Quantitat apostada'"></v-list-item-subtitle>
               </v-col>
               <v-col cols="4" class='text-center'>
-                <v-list-item-title v-text="`${myBet.bet.amount * myBet.bet.stake}€`"></v-list-item-title>
+                <v-list-item-title v-text="`${(myBet.bet.amount * myBet.bet.stake).toFixed(2)}€`"></v-list-item-title>
                 <v-list-item-subtitle v-text="'Premi'"></v-list-item-subtitle>
               </v-col>
             </v-row>

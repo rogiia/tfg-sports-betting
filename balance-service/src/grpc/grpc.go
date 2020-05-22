@@ -22,11 +22,14 @@ type server struct {
 func (s *server) PayBet(ctx context.Context, in *pb.PayBetRequest) (*pb.PayBetResponse, error) {
 	var userID = in.GetUserId()
 	var amount = in.GetAmount() * -1
+	log.Println("User", userID, "pays", amount)
 	var _, err = models.AddBalance(userID, amount)
 	if err != nil {
+		log.Println("Payment failed")
 		var response = false
 		return &pb.PayBetResponse{OK: &response}, err
 	}
+	log.Println("Payment successful")
 	var response = true
 	return &pb.PayBetResponse{OK: &response}, nil
 }
@@ -45,6 +48,7 @@ func (s *server) CashBet(ctx context.Context, in *pb.CashBetRequest) (*pb.CashBe
 
 // Start : Start grpc server
 func Start() {
+	log.Println("Starting GRPC server on port", port)
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

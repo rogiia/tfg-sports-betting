@@ -11,7 +11,7 @@
         <v-card-text>
           <v-container>
             <v-row>
-              <v-col cols="12">
+              <v-col cols="12" v-if="$store.getters['balance'] !== null">
                 <h1 class="text-center">{{$store.getters['balance'].toFixed(2)}}€</h1>
               </v-col>
             </v-row>

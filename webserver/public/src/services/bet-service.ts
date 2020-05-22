@@ -31,7 +31,8 @@ export async function placeBet(token: string, eventId: string, result: ResultTyp
   const response = await fetch(`${URL}/bet`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${token}`
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       eventId,

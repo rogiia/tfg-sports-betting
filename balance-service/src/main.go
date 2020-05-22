@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	log.Println("Bootstraping server")
 	var err = common.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -17,6 +18,6 @@ func main() {
 	}
 	persistence.Database.Init()
 	defer persistence.Database.Close()
+	go grpc.Start()
 	controllers.SetupRoutes()
-	grpc.Start()
 }

@@ -69,7 +69,7 @@ export class BalanceService {
     prize: number;
   }): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      this.client.CashBet({
+      this.client.cashBet({
         userId: params.userId,
         prize: params.prize
       }, (err: Error, result: { OK: boolean }) => {
@@ -87,7 +87,7 @@ export class BalanceService {
     amount: number;
   }): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      this.client.CashBet({
+      this.client.payBet({
         userId: params.userId,
         amount: params.amount
       }, (err: Error, result: { OK: boolean }) => {

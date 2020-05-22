@@ -12,10 +12,10 @@
           <v-container>
             <v-row>
               <v-col cols="6">
-                <h3 class="selectedBet">F.C. BARCELONA</h3>
+                <h3 :class="bet.result === 'L' ? 'selectedBet' : ''">{{event.localTeam}}</h3>
               </v-col>
               <v-col cols="6">
-                <h3>VILLARREAL</h3>
+                <h3 :class="bet.result === 'V' ? 'selectedBet' : ''">{{event.visitorTeam}}</h3>
               </v-col>
             </v-row>
             <v-row>
@@ -62,9 +62,12 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import {
+  placeBet
+} from '../services/bet-service';
 
 export default Vue.extend({
-  props: ['open'],
+  props: ['open', 'bet', 'event'],
   data: () => {
     return {
       betAmount: 1,
@@ -72,11 +75,14 @@ export default Vue.extend({
   },
   computed: {
     winningsAmount() {
-      return (this.betAmount * 1.21).toFixed(2);
+      return (this.betAmount * this.bet.stake).toFixed(2);
     },
   },
   methods: {
-    placeBet() {
+    async placeBet() {
+      if (this.$store.getters['isAuthenticated'] && this.bet) {
+        const bet = await placeBet(this.$store.getters['getAccessToken'], this.bet.eventId, this.bet.result, this.betAmount, this.bet.stake);
+      }
       this.$emit('close');
     },
     cancel() {
