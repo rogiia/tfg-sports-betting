@@ -2,6 +2,8 @@
   <div id="home">
     <v-tabs
       fixed-tabs
+      v-model="selectedTab"
+      @change="onChangeSelectedTab"
       dark>
       <v-tab
         v-for="sport in Object.keys(sportsTabs)"
@@ -63,7 +65,7 @@
     },
     data: () => {
       return {
-        selectedTab: 'futbol',
+        selectedTab: 'tab-futbol',
         sportsTabs,
         events: {
           futbol: newEmptyEventsList(),
@@ -72,11 +74,14 @@
         },
       };
     },
-    watch: {
-      async selectedTab(newTab: "futbol" | "basquet" | "hoquei") {
-        this.events[newTab] = await getEventsBySport(this.sportsTabs[newTab].name);
+    methods: {
+      async onChangeSelectedTab(newTab: "futbol" | "basquet" | "hoquei") {
+        const result = newTab.match(/^tab-(\w+)$/);
+        if (result && result.length === 2) {
+          this.events[result[1]] = await getEventsBySport(this.sportsTabs[result[1]].name);
+        }
       }
-    },
+    }
   });
 </script>
 

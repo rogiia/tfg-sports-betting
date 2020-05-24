@@ -5,9 +5,12 @@
         No s'ha fet cap aposta
       </div>
       <v-list v-if="myBets.length > 0">
-        <v-list-item v-for="(myBet, index) in myBets" :key="index">
+        <v-list-item v-for="(myBet, index) in myBets" :key="index"
+          :class="myBet.bet.winner === null ? '' : myBet.bet.winner ? 'winner-bet' : 'loser-bet'">
           <v-list-item-icon>
-            <v-icon>{{myBet.bet.winner === null ? 'mdi-clock' : myBet.bet.winner ? 'mdi-check-circle' : 'mdi-close-circle'}}</v-icon>
+            <v-icon>
+              {{myBet.bet.winner === null ? 'mdi-clock' : myBet.bet.winner ? 'mdi-check-circle' : 'mdi-close-circle'}}
+            </v-icon>
           </v-list-item-icon>
           <v-list-item-content>
             <v-row>

@@ -31,11 +31,11 @@ export default class Persistence {
       if (!mongoose.connection) {
         reject(new MongoConnectionError());
       }
-      EventModel.find({ sport }, (err: Error, res: IEvent[]) => {
+      EventModel.find({ $and: [{ sport }, { ended: false }] }, (err: Error, res: IEvent[]) => {
         if (err) {
           reject(err);
         }
-        resolve(res);
+        resolve(res.reverse());
       });
     });
   }
@@ -49,13 +49,12 @@ export default class Persistence {
         localTeam: localTeamName,
         visitorTeam: visitorTeamName,
         ended: false
-      }, (err, res: (mongoose.Document & IEvent)[]) => {
-        if (err) {
-          reject(err);
-        }
+      }).lean()
+      .then((res) => {
         console.log(`Searching for event with teams ${localTeamName} - ${visitorTeamName} got result ${JSON.stringify(res)}`);
         resolve(res);
-      });
+      })
+      .catch(reject);
     });
   }
 

@@ -1,10 +1,12 @@
 import * as AWS from 'aws-sdk';
 import { Consumer } from 'sqs-consumer';
 import Persistence from '../persistence';
-import EventResultService from '../grpc';
+import EventResultService from '../grpc/event-result-service';
+import BetService from '../grpc/bet-service';
 AWS.config.update({region: 'eu-west-1'});
 
 const eventResultSrv = new EventResultService();
+const betSrv = new BetService();
 const queueURL = process.env['SQS_URL'] || "https://sqs.eu-west-1.amazonaws.com/725226204633/tfg-queue";
 
 function parseMessage(message: string): {
@@ -48,15 +50,20 @@ export default class QueueReceiver {
             console.log('Looking for already existing events');
             const currentEvent = await Persistence.findCurrentEventByTeams(event.localTeam, event.visitorTeam);
             if (event.matchTime === 'END') {
-              console.log('Ending current event');
               if (currentEvent && currentEvent.length > 0) {
-                await Persistence.updateEventById(currentEvent[0]._id, {
+                eventId = currentEvent[0]._id;
+                console.log(`Ending current event ${eventId}`);
+                await Persistence.updateEventById(eventId, {
                   sport: event.sport,
                   localTeam: event.localTeam,
                   visitorTeam: event.visitorTeam,
                   ended: true
                 });
-                eventId = currentEvent[0]._id;
+                await betSrv.settleEndedEvent({
+                  eventId,
+                  result: event.localTeamResult > event.visitorTeamResult ? 'L' :
+                    event.localTeamResult === event.visitorTeamResult ? 'D' : 'V'
+                });
               }
             } else {
               if (currentEvent && currentEvent.length > 0) {

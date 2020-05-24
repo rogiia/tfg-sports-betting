@@ -99,6 +99,13 @@
         this.$store.dispatch('fetchBalance');
       }
     },
+    watch: {
+      $route(to, from) {
+        if (this.$store.getters['isAuthenticated']) {
+          this.$store.dispatch('fetchBalance');
+        }
+      }
+    },
     methods: {
       signin() {
         this.$store.dispatch('doAuthentication');

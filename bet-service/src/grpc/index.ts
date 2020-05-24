@@ -4,7 +4,7 @@ import {
   credentials
 } from 'grpc';
 
-import SettleBet from './implementation/bet-service';
+import SettleEndedEvent from './implementation/bet-service';
 
 function loadProtoDescriptors(protoFile: string) {
   const PROTO_PATH = `${__dirname}/protos/${protoFile}.proto`;
@@ -34,8 +34,8 @@ export class GRPCServer {
     const GRPC_PORT = process.env['GRPC_PORT'] || 50051;
     this.server = new Server();
     const descriptors = loadProtoDescriptors('bet-service');
-    this.server.addService(descriptors.BetService, {
-      SettleBet
+    this.server.addService(descriptors.BetService.service, {
+      settleEndedEvent: SettleEndedEvent
     });
     this.server.bind(`${GRPC_HOST}:${GRPC_PORT}`, ServerCredentials.createInsecure());
   }

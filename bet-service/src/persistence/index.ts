@@ -31,13 +31,9 @@ export default class Persistence {
       if (!mongoose.connection) {
         reject(new MongoConnectionError());
       }
-      BetModel.findById(betId, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
+      BetModel.findById(betId).lean()
+      .then(resolve)
+      .catch(reject);
     });
   }
 
@@ -46,12 +42,22 @@ export default class Persistence {
       if (!mongoose.connection) {
         reject(new MongoConnectionError());
       }
-      BetModel.find({ userId }, (err: Error, res: IBet[]) => {
-        if (err) {
-          reject(err);
-        }
-        resolve(res);
-      });
+      BetModel.find({ userId }).lean()
+      .then((result: IBet[]) => {
+        resolve(result.reverse());
+      })
+      .catch(reject);
+    });
+  }
+
+  public static findBetsByEventId(eventId: string): Promise<IBet[]> {
+    return new Promise((resolve, reject) => {
+      if (!mongoose.connection) {
+        reject(new MongoConnectionError());
+      }
+      BetModel.find({ eventId }).lean()
+      .then(resolve)
+      .catch(reject);
     });
   }
 
@@ -72,13 +78,9 @@ export default class Persistence {
           winner,
           claimed: true
         }
-      }, (err, res) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(res);
-        }
-      });
+      }).lean()
+      .then(resolve)
+      .catch(reject);
     });
   }
 

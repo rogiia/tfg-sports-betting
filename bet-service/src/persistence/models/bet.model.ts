@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 
 export interface IBet {
+  _id?: string;
   eventId: string;
   userId: string;
   result: 'L' | 'D' | 'V';
