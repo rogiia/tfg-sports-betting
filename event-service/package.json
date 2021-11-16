@@ -17,7 +17,7 @@
     "@types/mongoose": "^5.5.23",
     "@types/morgan": "^1.7.37",
     "@types/node": "^12.11.1",
-    "aws-sdk": "^2.555.0",
+    "aws-sdk": "^2.814.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.4",
     "express": "^4.17.1",
